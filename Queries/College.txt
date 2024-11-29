@@ -1,0 +1,42 @@
+
+'''select College Database'''
+@database => College @batchsize => 50;
+
+'''insert'''
+@populate => diversity_school @values => [ University of Phoenix-Arizona | 195059 | Arizona | Women|134722 ] [University of Phoenix-Arizona|195059|Arizona|Asian|1959];
+@populate => historical_tuition @values => [All Institutions|1985-86|All Constant|10893] [All Institutions|1985-86|4 Year Constant|12274];
+@populate => salary_potential @values => [1|Auburn University|Alabama|54400|104500|51|31] [2|University of Alabama in Huntsville|Alabama|57500|103900|59|45];
+@populate => tuition_cost @values => [Abraham Baldwin Agricultural College|Georgia|GA|Public|2 Year|8474|4128|12602|12550|21024] [Abilene Christian University|Texas|TX|Private|4 Year|10350|34850|45200|34850|45200];
+@populate => tuition_income @values => [Piedmont International University|NC|20174|2016|On Campus|11475|0 to 30,000] [Piedmont International University|NC|20174|2016|On Campus|11451|30,001 to 48,000];
+
+
+'''project + filter'''
+@use => diversity_school @project => *;
+
+@use => historical_tuition @project => *;
+ 
+@use => tuition_cost
+@project => tuition_cost.type, tuition_cost.degree_length, tuition_cost.room_and_board, tuition_cost.in_state_total, tuition_cost.out_of_state_total;
+
+
+'''aggregate'''
+@use => salary_potential
+@categorize => NULL
+@project => AVG:salary_potential.mid_career_pay;
+
+'''group by + aggregate + sort'''
+@use => salary_potential
+@categorize => salary_potential.state_name
+@project => AVG:salary_potential.early_career_pay, MAX:salary_potential.make_world_better_percent
+@sort => MAX(salary_potential.make_world_better_percent) ASC, AVG(salary_potential.early_career_pay) DESC;
+
+'''join 3 + filter + sort'''
+@use => salary_potential, tuition_income, tuition_cost
+@combine => salary_potential.name = tuition_cost.name, tuition_income.name = tuition_cost.name
+@filter => ( ( salary_potential.mid_career_pay < 93132.591769 ) AND ( tuition_income.campus == "On Campus" ) )
+@project => tuition_income.name, tuition_cost.type, tuition_cost.in_state_total, tuition_income.net_cost, salary_potential.mid_career_pay, salary_potential.make_world_better_percent
+@sort => tuition_income.name DESC, tuition_income.net_cost ASC;
+
+
+
+

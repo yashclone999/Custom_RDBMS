@@ -1,0 +1,63 @@
+'''create Database and Tables with REFERENTIAL INTEGRITY'''
+@database => Test @batchsize => 3;
+    
+@create => Customer
+@columns => name str 20, order_id str 12, age int 3, address str 30, company str 20
+@constraint => [ Customer.company references Company.name] [ Customer.order_id references Order.id];
+    
+    
+@create => Company
+@columns => name str 20, num_employee int 7, revenue float 15;
+    
+    
+@create => Order
+@columns => id str 12, invoice str 20, product_id str 10, price int 9
+@constraint => [ Order.product_id, Order.price references Product.id, Product.price];
+    
+    
+@create => Product
+@columns => id str 10, price int 9, description str 35;
+
+
+'''insert into tables: CHECK FOREIGN KEY VALUES'''
+@populate => Product
+@values => [productID1| 520 | Awesome Video projector] [productID2| 7000| Dull Phone]
+[productID3| 1 | Cheap Teleporter more like chopper] [productID4| 7000000 | Batmobile woah!]
+[productID5| 40000 | Harry's Broom - for cleaning duh] [productID6| 800| same old eye phone] [productID7| 99 | bottle];
+
+@populate => Order
+@values => [XBG123| Invoice 1 | productID1| 520] [YB723|Invoice 2| productID2 | 7000]
+[DHG823| Invoice 3 | productID3| 1] [JJS83| Invoice 4 | productID4| 7000000]
+[YVUY78| Invoice 5 | productID5| 40000] [KJ833| Invoice  6| productID6| 800] [KJD383| Invoice 7 | productID7| 99];
+
+@populate => Company
+@values => [Google| 20000 | 800000] [Salesforce| 10500 | 1009000] [Microsoft| 7500 | 9500890] [Akuna| 670 | 6070900];
+
+@populate => Customer
+@values => [James Potter| XBG123| 25 | 720 west 27 LA |Google] [John Smith |YB723|25| 8 west 24 SJC| Google]
+[Rick Shaw| DHG823| 35| 77 North 27 CA| Salesforce] [Ezio Auditore| JJS83| 42| Delhi, India| Microsoft]
+[Himanshu Bill| YVUY78| 12| 87 East Boston| Microsoft] [Jack Reacher | KJ833| 76| RELAND, London| Akuna] [Emma Watson | KJD383| 26| JR K, London| Akuna];
+
+'''check original data'''
+@use => Customer @project => * ;
+
+@use => Company @project => * ;
+
+@use => Order @project => *;
+
+@use => Product @project => * ;
+
+'''update cascade'''
+@update => Company
+@values => name = Microsoft Inc.
+@filter => ( Company.name == "Microsoft" );
+
+'''check cascade affects'''
+@use => Customer @project => * ;
+
+@use => Company @project => * ;
+
+
+'''delete cascade'''
+@delete => Product
+@filter => ( Product.price >= 7000000 );

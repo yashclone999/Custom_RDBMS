@@ -1,0 +1,50 @@
+'''select Sales Database'''
+@database => Sales @batchsize => 50;
+
+'''project'''
+@use => customer
+@project => *;
+
+@use => sales
+@project => *;
+
+'''join + filter'''
+@use => customer, sales
+@combine => sales.customer_id = customer.customer_id
+@filter =>  ( ( customer.payment_method == "Credit Card" ) AND ( customer.age < 25 ) )
+@project => customer.customer_id, customer.gender, customer.age, sales.shopping_mall, sales.invoice_no;
+
+'''join + group by + aggregate + sort'''
+@use => customer, sales
+@combine => sales.customer_id = customer.customer_id
+@categorize => sales.shopping_mall, customer.payment_method
+@project => SUM:sales.price, AVG:customer.age
+@sort => SUM(sales.price) ASC;
+
+
+'''update and delete'''
+
+'''show original'''
+@use => customer
+@categorize => customer.payment_method
+@project => COUNT:customer.customer_id;
+
+'''update'''
+@update => customer
+@values => payment_method = Cheque 
+@filter => ( customer.payment_method == "Cash" );
+
+'''show updated'''
+@use => customer
+@categorize => customer.payment_method
+@project => COUNT:customer.customer_id;
+
+'''delete'''
+@delete => customer
+@filter => ( customer.payment_method == "Cheque" );
+
+'''show deleted'''
+@use => customer
+@categorize => customer.payment_method
+@project => COUNT:customer.customer_id;
+
